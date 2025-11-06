@@ -117,7 +117,7 @@
 
     <!-- Timer Container -->
     <div
-      class="border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg w-80 p-6"
+      class="border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg w-sm p-6"
     >
       <!-- Direction Buttons -->
       <div class="flex items-center gap-4 mb-4 w-full justify-between">
@@ -171,11 +171,14 @@
       <!-- Display -->
       <div
         id="display"
-        class="text-6xl font-mono mb-4"
+        class="text-6xl font-mono mb-4 flex items-center justify-center"
         aria-label="Timer display"
         aria-live="off"
       >
-        00:00:00
+        <span class="relative text-center">
+          <span id="timeText">00:00:00</span>
+          <span id="minusSign" class="absolute opacity-0" style="right: 100%; margin-right: 0.5rem;">-</span>
+        </span>
       </div>
 
       <!-- Start/Pause and Reset buttons -->
@@ -279,6 +282,8 @@
       let interval = null;
 
       const display = document.getElementById("display");
+      const minusSign = document.getElementById("minusSign");
+      const timeText = document.getElementById("timeText");
       const startPauseBtn = document.getElementById("startPause");
       const playIcon = startPauseBtn.querySelector(".icon-play");
       const pauseIcon = startPauseBtn.querySelector(".icon-pause");
@@ -370,7 +375,21 @@
 
       function updateDisplay() {
         const timeString = formatTime(seconds);
-        display.textContent = timeString;
+        const timeNumbersString = timeString.startsWith("-")
+          ? timeString.slice(1)
+          : timeString;
+
+        // Update minus sign visibility
+        if (seconds < 0) {
+          minusSign.classList.remove("opacity-0");
+        } else {
+          minusSign.classList.add("opacity-0");
+        }
+
+        // Update time numbers (centered independently)
+        timeText.textContent = timeNumbersString;
+
+        // Update document title (still uses full string with minus)
         const statusEmoji = running ? "▶️" : "⏸️";
         document.title = `${statusEmoji} ${timeString}`;
       }
