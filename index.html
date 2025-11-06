@@ -214,6 +214,7 @@
           id="startInput"
           type="text"
           placeholder="e.g. 25:00 or -1:15:30"
+          enterkeyhint="done"
           class="px-3 py-2 flex-1 border border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400 rounded-lg text-lg w-48 text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 dark:hover:border-gray-500"
         />
         <button
@@ -439,6 +440,13 @@
       downBtn.addEventListener("click", () => setDirection(-1));
       setTimeBtn.addEventListener("click", setStartTime);
       themeToggleBtn.addEventListener("click", toggleTheme);
+      // Trigger set on Enter/IME action inside the input (desktop and mobile)
+      startInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          setStartTime();
+        }
+      });
 
       // --- Init ---
       // Initialize theme based on saved or system preference
