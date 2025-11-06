@@ -123,7 +123,7 @@
       <div class="flex items-center gap-4 mb-4 w-full justify-between">
         <button
           id="down"
-          class="dir-btn px-3 py-2 rounded-lg bg-gray-300 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-400 dark:hover:bg-gray-600 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900 active:scale-95 disabled:cursor-not-allowed disabled:hover:bg-gray-300 dark:disabled:hover:bg-gray-700 disabled:active:scale-100"
+          class="dir-btn px-3 py-2 rounded-lg flex items-center justify-center shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900 disabled:cursor-not-allowed disabled:active:scale-100"
           aria-label="Count Down"
           aria-pressed="false"
         >
@@ -146,7 +146,7 @@
         <span id="dirLabel" class="text-lg font-medium"> Counting Up </span>
         <button
           id="up"
-          class="dir-btn px-3 py-2 rounded-lg bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900 active:scale-95 disabled:cursor-not-allowed disabled:hover:bg-blue-600 disabled:active:scale-100"
+          class="dir-btn px-3 py-2 rounded-lg flex items-center justify-center shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900 disabled:cursor-not-allowed disabled:active:scale-100"
           aria-label="Count Up"
           aria-pressed="true"
         >
@@ -420,42 +420,55 @@
         const bgClassesToRemove = [
           "bg-blue-600",
           "bg-gray-300",
+          "bg-gray-400",
           "bg-gray-600",
           "dark:bg-gray-700",
-        ]; // handle any previous variants
+          "dark:bg-gray-600",
+        ];
         const textClassesToRemove = [
           "text-white",
           "text-gray-900",
-          "text-gray-600",
-        ]; // be safe about prior states
+          "text-gray-100",
+        ];
+        const hoverClassesToRemove = [
+          "hover:bg-gray-400",
+          "hover:bg-blue-700",
+          "dark:hover:bg-gray-600",
+        ];
+        const activeClassesToRemove = ["active:scale-95"];
 
         [upBtn, downBtn].forEach((btn) => {
           btn.classList.remove(...bgClassesToRemove);
           btn.classList.remove(...textClassesToRemove);
+          btn.classList.remove(...hoverClassesToRemove);
+          btn.classList.remove(...activeClassesToRemove);
         });
 
         const makeActive = (btn) => {
+          // Selected: blue, no hover, no active, disabled, cursor disabled
           btn.classList.add("bg-blue-600", "text-white");
+          btn.disabled = true;
         };
         const makeInactive = (btn) => {
+          // Unselected: gray, has hover, has active, not disabled
           btn.classList.add(
             "bg-gray-300",
             "text-gray-900",
             "dark:bg-gray-700",
-            "dark:text-gray-100"
+            "dark:text-gray-100",
+            "hover:bg-gray-400",
+            "dark:hover:bg-gray-600",
+            "active:scale-95"
           );
+          btn.disabled = false;
         };
 
         if (dir === 1) {
           makeActive(upBtn);
           makeInactive(downBtn);
-          upBtn.disabled = true;
-          downBtn.disabled = false;
         } else {
           makeInactive(upBtn);
           makeActive(downBtn);
-          upBtn.disabled = false;
-          downBtn.disabled = true;
         }
         upBtn.setAttribute("aria-pressed", dir === 1 ? "true" : "false");
         downBtn.setAttribute("aria-pressed", dir === 1 ? "false" : "true");
