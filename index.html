@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>⏸️ 00:00:00</title>
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      // Configure Tailwind CDN to use class-based dark mode.
+      // Must be set before the CDN script so it can pick it up.
+      tailwind = window.tailwind || {};
+      tailwind.config = Object.assign({}, tailwind.config, {
+        darkMode: "class",
+      });
+    </script>
+    <script>
+      // Apply saved theme or system preference ASAP to avoid flash
+      (function () {
+        try {
+          var saved = localStorage.getItem("theme");
+          var shouldUseDark = saved
+            ? saved === "dark"
+            : window.matchMedia &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches;
+          if (shouldUseDark) {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+        } catch (e) {
+          // If localStorage is unavailable, fall back to system preference
+          if (
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+          ) {
+            document.documentElement.classList.add("dark");
+          }
+        }
+      })();
+    </script>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%230ea5e9'/%3E%3Ccircle cx='32' cy='32' r='24' fill='white'/%3E%3Cline x1='32' y1='32' x2='32' y2='16' stroke='%230ea5e9' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='32' y1='32' x2='44' y2='32' stroke='%230ea5e9' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='32' r='3' fill='%230ea5e9'/%3E%3C/svg%3E"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Re-assert class-based dark mode after CDN load (browser caches/order quirks)
+      try {
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = Object.assign({}, window.tailwind.config, {
+          darkMode: "class",
+        });
+      } catch (e) {}
+    </script>
+  </head>
+  <body
+    class="flex flex-col items-center justify-center h-screen bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100"
+  >
+    <button
+      id="themeToggle"
+      class="absolute top-4 right-4 px-3 py-2 rounded-lg bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100"
+      aria-label="Toggle theme"
+    >
+      <span class="flex items-center gap-2">
+        <svg
+          class="icon-sun w-5 h-5 dark:hidden"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="4" />
+          <path
+            d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41"
+          />
+        </svg>
+        <svg
+          class="icon-moon w-5 h-5 hidden dark:block"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
+          <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 1 0 9.79 9.79z" />
+        </svg>
+        <span class="text-sm">Theme</span>
+      </span>
+    </button>
+    <div class="flex items-center gap-4 mb-4 w-64 justify-between">
+      <button
+        id="down"
+        class="dir-btn px-3 py-2 rounded-lg bg-gray-300 dark:bg-gray-700 flex items-center justify-center"
+        aria-label="Count Down"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="w-6 h-6"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+      <span id="dirLabel" class="text-lg font-medium"> Counting Up </span>
+      <button
+        id="up"
+        class="dir-btn px-3 py-2 rounded-lg bg-blue-600 text-white flex items-center justify-center"
+        aria-label="Count Up"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="w-6 h-6"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M5 15l7-7 7 7"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <div id="display" class="text-6xl font-mono mb-6">00:00:00</div>
+
+    <div class="flex gap-3 mb-4">
+      <button
+        id="startPause"
+        class="px-4 py-2 rounded-lg bg-blue-600 text-white flex items-center justify-center"
+        aria-label="Play"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="icon-play w-7 h-7"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M5 3v18l14-9-14-9z"
+          />
+        </svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          class="icon-pause w-7 h-7 hidden"
+        >
+          <rect x="7" y="5" width="4" height="14" rx="1" fill="currentColor" />
+          <rect x="13" y="5" width="4" height="14" rx="1" fill="currentColor" />
+        </svg>
+      </button>
+      <button
+        id="reset"
+        class="px-4 py-2 rounded-lg bg-gray-400 text-white dark:bg-gray-600 flex items-center justify-center"
+        aria-label="Reset"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="w-6 h-6"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M4.5 12a7.5 7.5 0 0112.743-5.303L19.5 8M19.5 8V3.5M19.5 8H15m4.5 4a7.5 7.5 0 01-12.743 5.303L4.5 16M4.5 16v4.5M4.5 16H9"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <input
+        id="startInput"
+        type="text"
+        placeholder="e.g. 25:00 or -1:15:30"
+        class="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:placeholder-gray-400 rounded-lg text-lg w-48 text-center"
+      />
+      <button
+        id="setTime"
+        class="px-3 py-2 rounded-lg bg-blue-600 text-white text-lg"
+      >
+        Set
+      </button>
+    </div>
+
+    <script>
+      let seconds = 0;
+      let running = false;
+      let direction = 1; // 1 = up, -1 = down
+      let interval = null;
+
+      const display = document.getElementById("display");
+      const startPauseBtn = document.getElementById("startPause");
+      const playIcon = startPauseBtn.querySelector(".icon-play");
+      const pauseIcon = startPauseBtn.querySelector(".icon-pause");
+      const resetBtn = document.getElementById("reset");
+      const upBtn = document.getElementById("up");
+      const downBtn = document.getElementById("down");
+      const dirLabel = document.getElementById("dirLabel");
+      const startInput = document.getElementById("startInput");
+      const setTimeBtn = document.getElementById("setTime");
+      const themeToggleBtn = document.getElementById("themeToggle");
+
+      // --- Theme management ---
+      function getStoredTheme() {
+        try {
+          const saved = localStorage.getItem("theme");
+          if (saved === "dark" || saved === "light") return saved;
+        } catch (_) {}
+        return null;
+      }
+
+      function systemPrefersDark() {
+        return (
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+        );
+      }
+
+      function getEffectiveTheme() {
+        const stored = getStoredTheme();
+        if (stored) return stored;
+        return systemPrefersDark() ? "dark" : "light";
+      }
+
+      function applyTheme(mode) {
+        const root = document.documentElement;
+        if (mode === "dark") {
+          root.classList.add("dark");
+        } else {
+          root.classList.remove("dark");
+        }
+      }
+
+      function setTheme(mode) {
+        applyTheme(mode);
+        try {
+          localStorage.setItem("theme", mode);
+        } catch (_) {}
+      }
+
+      function toggleTheme() {
+        const current = getEffectiveTheme();
+        setTheme(current === "dark" ? "light" : "dark");
+      }
+
+      // --- Utility functions ---
+      function formatTime(sec) {
+        const neg = sec < 0;
+        const abs = Math.abs(sec);
+        const h = String(Math.floor(abs / 3600)).padStart(2, "0");
+        const m = String(Math.floor((abs % 3600) / 60)).padStart(2, "0");
+        const s = String(abs % 60).padStart(2, "0");
+        return (neg ? "-" : "") + `${h}:${m}:${s}`;
+      }
+
+      function parseTime(str) {
+        const neg = str.trim().startsWith("-");
+        const clean = str.replace(/^-/, "").trim();
+        const parts = clean
+          .split(":")
+          .map(Number)
+          .filter((n) => !isNaN(n));
+        let total = 0;
+        if (parts.length === 1) total = parts[0];
+        else if (parts.length === 2) total = parts[0] * 60 + parts[1];
+        else if (parts.length === 3)
+          total = parts[0] * 3600 + parts[1] * 60 + parts[2];
+        return neg ? -total : total;
+      }
+
+      function updateDisplay() {
+        const timeString = formatTime(seconds);
+        display.textContent = timeString;
+        const statusEmoji = running ? "▶️" : "⏸️";
+        document.title = `${statusEmoji} ${timeString}`;
+      }
+
+      function tick() {
+        seconds += direction;
+        updateDisplay();
+        saveState();
+      }
+
+      function toggleStartPause() {
+        if (!running) {
+          interval = setInterval(tick, 1000);
+          playIcon.classList.add("hidden");
+          pauseIcon.classList.remove("hidden");
+          startPauseBtn.setAttribute("aria-label", "Pause");
+        } else {
+          clearInterval(interval);
+          playIcon.classList.remove("hidden");
+          pauseIcon.classList.add("hidden");
+          startPauseBtn.setAttribute("aria-label", "Play");
+        }
+        running = !running;
+        updateDisplay();
+        saveState();
+      }
+
+      function resetTimer() {
+        clearInterval(interval);
+        running = false;
+        seconds = 0;
+        playIcon.classList.remove("hidden");
+        pauseIcon.classList.add("hidden");
+        startPauseBtn.setAttribute("aria-label", "Play");
+        updateDisplay();
+        saveState();
+      }
+
+      function setDirection(dir) {
+        direction = dir;
+        dirLabel.textContent = dir === 1 ? "Counting Up" : "Counting Down";
+        // Normalize classes first to avoid conflicting Tailwind utilities
+        const bgClassesToRemove = [
+          "bg-blue-600",
+          "bg-gray-300",
+          "bg-gray-600",
+          "dark:bg-gray-700",
+        ]; // handle any previous variants
+        const textClassesToRemove = [
+          "text-white",
+          "text-gray-900",
+          "text-gray-600",
+        ]; // be safe about prior states
+
+        [upBtn, downBtn].forEach((btn) => {
+          btn.classList.remove(...bgClassesToRemove);
+          btn.classList.remove(...textClassesToRemove);
+        });
+
+        const makeActive = (btn) => {
+          btn.classList.add("bg-blue-600", "text-white");
+        };
+        const makeInactive = (btn) => {
+          btn.classList.add(
+            "bg-gray-300",
+            "text-gray-900",
+            "dark:bg-gray-700",
+            "dark:text-gray-100"
+          );
+        };
+
+        if (dir === 1) {
+          makeActive(upBtn);
+          makeInactive(downBtn);
+        } else {
+          makeInactive(upBtn);
+          makeActive(downBtn);
+        }
+        saveState();
+      }
+
+      function setStartTime() {
+        const val = startInput.value.trim();
+        if (val) {
+          seconds = parseTime(val);
+          updateDisplay();
+          saveState();
+        }
+      }
+
+      // --- Persistence ---
+      function saveState() {
+        localStorage.setItem(
+          "timerState",
+          JSON.stringify({
+            seconds,
+            direction,
+            running,
+          })
+        );
+      }
+
+      function loadState() {
+        const data = localStorage.getItem("timerState");
+        if (data) {
+          try {
+            const state = JSON.parse(data);
+            seconds = state.seconds ?? 0;
+            direction = state.direction ?? 1;
+            running = false; // always paused on load for safety
+            setDirection(direction);
+            updateDisplay();
+          } catch (e) {
+            console.warn("Failed to load saved timer state:", e);
+          }
+        }
+      }
+
+      // --- Event listeners ---
+      startPauseBtn.addEventListener("click", toggleStartPause);
+      resetBtn.addEventListener("click", resetTimer);
+      upBtn.addEventListener("click", () => setDirection(1));
+      downBtn.addEventListener("click", () => setDirection(-1));
+      setTimeBtn.addEventListener("click", setStartTime);
+      themeToggleBtn.addEventListener("click", toggleTheme);
+
+      // --- Init ---
+      // Initialize theme based on saved or system preference
+      applyTheme(getEffectiveTheme());
+
+      // If there is no stored preference, follow system changes live
+      try {
+        if (!getStoredTheme() && window.matchMedia) {
+          window
+            .matchMedia("(prefers-color-scheme: dark)")
+            .addEventListener("change", () => applyTheme(getEffectiveTheme()));
+        }
+      } catch (_) {}
+      loadState();
+      updateDisplay();
+    </script>
+  </body>
+</html>
