@@ -177,7 +177,12 @@
       >
         <span class="relative text-center">
           <span id="timeText">00:00:00</span>
-          <span id="minusSign" class="absolute opacity-0" style="right: 100%; margin-right: 0.5rem;">-</span>
+          <span
+            id="minusSign"
+            class="absolute opacity-0"
+            style="right: 100%; margin-right: 0.5rem"
+            >-</span
+          >
         </span>
       </div>
 
@@ -279,7 +284,9 @@
       let seconds = 0;
       let running = false;
       let direction = 1; // 1 = up, -1 = down
-      let interval = null;
+      let animationFrameId = null;
+      let lastFrameTime = 0;
+      let accumulatedTime = 0;
 
       const display = document.getElementById("display");
       const minusSign = document.getElementById("minusSign");
@@ -394,35 +401,64 @@
         document.title = `${statusEmoji} ${timeString}`;
       }
 
-      function tick() {
-        seconds += direction;
-        updateDisplay();
-        saveState();
+      function animate(timestamp) {
+        // bail out if timer is stopped
+        if (!running) {
+          animationFrameId = null;
+          return;
+        }
+
+        // initialise values on first call
+        if (!lastFrameTime) {
+          lastFrameTime = timestamp;
+          accumulatedTime = seconds;
+        }
+
+        const deltaTime = (timestamp - lastFrameTime) / 1000;
+        lastFrameTime = timestamp;
+
+        accumulatedTime += direction * deltaTime;
+        const roundedTime = Math.round(accumulatedTime);
+
+        // only update and save once seconds has changed
+        if (roundedTime !== seconds) {
+          seconds = roundedTime;
+          updateDisplay();
+          saveState();
+        }
+
+        // requestAnimationFrame passes its own timestamp to animate
+        animationFrameId = requestAnimationFrame(animate);
       }
 
       function toggleStartPause() {
         if (!running) {
-          interval = setInterval(tick, 1000);
+          running = true;
+          animate(performance.now());
           playIcon.classList.add("hidden");
           pauseIcon.classList.remove("hidden");
           startPauseBtn.setAttribute("aria-label", "Pause");
           announce("Timer started");
         } else {
-          clearInterval(interval);
+          running = false;
+          cancelAnimationFrame(animationFrameId); // prevent queued animate calls from running
+          seconds = Math.round(accumulatedTime); // only store whole seconds
+          lastFrameTime = 0; // resetting forces anime to re-init lastFrameTime on subsequent plays
           playIcon.classList.remove("hidden");
           pauseIcon.classList.add("hidden");
           startPauseBtn.setAttribute("aria-label", "Play");
           announce("Timer paused");
         }
-        running = !running;
         updateDisplay();
         saveState();
       }
 
       function resetTimer() {
-        clearInterval(interval);
+        cancelAnimationFrame(animationFrameId); // prevent queued animate calls from running
         running = false;
         seconds = 0;
+        accumulatedTime = 0;
+        lastFrameTime = 0; // resetting forces animate to re-init lastFrameTime on subsequent plays
         playIcon.classList.remove("hidden");
         pauseIcon.classList.add("hidden");
         startPauseBtn.setAttribute("aria-label", "Play");
@@ -498,7 +534,7 @@
               : "Direction changed to counting down"
           );
         }
-        saveState();
+        saveState(); // save the new direction
         if (!suppressAnnouncement) {
           startPauseBtn.focus();
         }
@@ -507,7 +543,10 @@
       function setStartTime() {
         const val = startInput.value.trim();
         if (val) {
-          seconds = parseTime(val);
+          const newTime = parseTime(val);
+          seconds = newTime;
+          accumulatedTime = newTime;
+          lastFrameTime = 0;
           updateDisplay();
           saveState();
           const timeString = formatTime(seconds);
